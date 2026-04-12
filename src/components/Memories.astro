@@ -1,0 +1,105 @@
+---
+import MemoryCard from './MemoryCard.astro';
+import { memories } from '../data/memories';
+---
+
+<section class="memories-section" id="anilar">
+  <h2 class="section-title">Anılarımız</h2>
+
+  <div class="timeline">
+    <div class="timeline-line" aria-hidden="true"></div>
+    {memories.map((memory, index) => (
+      <div class={`timeline-item ${index % 2 === 0 ? 'timeline-left' : 'timeline-right'}`}>
+        <div class="timeline-dot" aria-hidden="true"></div>
+        <MemoryCard memory={memory} index={index} />
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .memories-section {
+    background: var(--color-bg-alt);
+    padding: var(--space-xl) var(--space-md);
+  }
+
+  .timeline {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .timeline-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-rose-pale);
+    translate: -50% 0;
+  }
+
+  .timeline-item {
+    position: relative;
+    display: flex;
+    margin-bottom: var(--space-lg);
+    width: 50%;
+  }
+
+  .timeline-item.timeline-left {
+    justify-content: flex-end;
+    padding-right: var(--space-lg);
+    align-self: flex-start;
+  }
+
+  .timeline-item.timeline-right {
+    justify-content: flex-start;
+    padding-left: var(--space-lg);
+    margin-left: 50%;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    top: var(--space-md);
+    width: 14px;
+    height: 14px;
+    background: var(--color-rose);
+    border: 3px solid var(--color-surface);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--color-rose-pale);
+    z-index: 1;
+  }
+
+  .timeline-left .timeline-dot {
+    right: calc(-7px + 0px);
+    right: -7px;
+  }
+
+  .timeline-right .timeline-dot {
+    left: -7px;
+  }
+
+  /* Mobile: single column */
+  @media (max-width: 768px) {
+    .timeline-line {
+      left: 20px;
+    }
+
+    .timeline-item,
+    .timeline-item.timeline-left,
+    .timeline-item.timeline-right {
+      width: 100%;
+      margin-left: 0;
+      padding-left: calc(20px + var(--space-md) + 7px);
+      padding-right: 0;
+      justify-content: flex-start;
+    }
+
+    .timeline-dot,
+    .timeline-left .timeline-dot,
+    .timeline-right .timeline-dot {
+      left: 13px;
+      right: auto;
+    }
+  }
+</style>

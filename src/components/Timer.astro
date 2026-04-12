@@ -1,0 +1,176 @@
+---
+---
+
+<section class="timer-section" id="zamanlayici">
+  <h2 class="section-title">Birlikte</h2>
+
+  <div class="timer-grid">
+    <div class="timer-card">
+      <h3 class="timer-label">Birlikte geçen zaman</h3>
+      <div class="timer-display" id="together-timer">
+        <div class="timer-unit">
+          <span class="timer-number" data-together="days">—</span>
+          <span class="timer-text">Gün</span>
+        </div>
+        <div class="timer-unit">
+          <span class="timer-number" data-together="hours">—</span>
+          <span class="timer-text">Saat</span>
+        </div>
+        <div class="timer-unit">
+          <span class="timer-number" data-together="minutes">—</span>
+          <span class="timer-text">Dakika</span>
+        </div>
+        <div class="timer-unit">
+          <span class="timer-number" data-together="seconds">—</span>
+          <span class="timer-text">Saniye</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="timer-card">
+      <h3 class="timer-label">Bir sonraki yıl dönümümüz</h3>
+      <div class="timer-display" id="countdown-timer">
+        <div class="timer-unit">
+          <span class="timer-number" data-countdown="days">—</span>
+          <span class="timer-text">Gün</span>
+        </div>
+        <div class="timer-unit">
+          <span class="timer-number" data-countdown="hours">—</span>
+          <span class="timer-text">Saat</span>
+        </div>
+        <div class="timer-unit">
+          <span class="timer-number" data-countdown="minutes">—</span>
+          <span class="timer-text">Dakika</span>
+        </div>
+        <div class="timer-unit">
+          <span class="timer-number" data-countdown="seconds">—</span>
+          <span class="timer-text">Saniye</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const ANNIVERSARY = new Date(2026, 2, 6); // March 6, 2026
+
+  function getNextAnniversary(): Date {
+    const now = new Date();
+    const thisYear = now.getFullYear();
+    const thisYearAnniversary = new Date(thisYear, 2, 6);
+
+    return now > thisYearAnniversary
+      ? new Date(thisYear + 1, 2, 6)
+      : thisYearAnniversary;
+  }
+
+  function msToUnits(ms: number) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return { days, hours, minutes, seconds };
+  }
+
+  function updateTimers() {
+    const now = new Date();
+
+    // Together since
+    const togetherMs = now.getTime() - ANNIVERSARY.getTime();
+    const together = msToUnits(togetherMs);
+    (document.querySelector('[data-together="days"]') as HTMLElement).textContent = String(together.days);
+    (document.querySelector('[data-together="hours"]') as HTMLElement).textContent = String(together.hours).padStart(2, '0');
+    (document.querySelector('[data-together="minutes"]') as HTMLElement).textContent = String(together.minutes).padStart(2, '0');
+    (document.querySelector('[data-together="seconds"]') as HTMLElement).textContent = String(together.seconds).padStart(2, '0');
+
+    // Countdown to next anniversary
+    const nextAnniversary = getNextAnniversary();
+    const countdownMs = nextAnniversary.getTime() - now.getTime();
+    const countdown = msToUnits(Math.max(0, countdownMs));
+    (document.querySelector('[data-countdown="days"]') as HTMLElement).textContent = String(countdown.days);
+    (document.querySelector('[data-countdown="hours"]') as HTMLElement).textContent = String(countdown.hours).padStart(2, '0');
+    (document.querySelector('[data-countdown="minutes"]') as HTMLElement).textContent = String(countdown.minutes).padStart(2, '0');
+    (document.querySelector('[data-countdown="seconds"]') as HTMLElement).textContent = String(countdown.seconds).padStart(2, '0');
+  }
+
+  updateTimers();
+  setInterval(updateTimers, 1000);
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) updateTimers();
+  });
+</script>
+
+<style>
+  .timer-section {
+    background: var(--color-bg);
+    padding: var(--space-xl) var(--space-md);
+  }
+
+  .timer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .timer-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-rose-pale);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-sm);
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(212, 87, 123, 0.06);
+  }
+
+  .timer-label {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+    text-transform: lowercase;
+  }
+
+  .timer-display {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+
+  .timer-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+  }
+
+  .timer-number {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    color: var(--color-rose);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .timer-text {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+    text-transform: lowercase;
+  }
+
+  @media (max-width: 768px) {
+    .timer-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .timer-unit {
+      min-width: 50px;
+    }
+  }
+</style>
