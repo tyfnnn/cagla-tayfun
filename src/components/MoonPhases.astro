@@ -12,8 +12,7 @@ const PHASE_TR: Record<PhaseName, string> = {
   'Waning Crescent': 'Solan Hilal',
 };
 
-const items = moonPhases;
-const lastIndex = items.length - 1;
+const items = [...moonPhases].reverse();
 
 function fmtDate(iso: string) {
   return new Date(iso + 'T12:00:00Z').toLocaleDateString('tr-TR', {
@@ -65,7 +64,7 @@ const SVG_SIZE = 110;
   ) : (
     <ul class="moon-strip" role="list">
       {items.map((m: MoonPhase, i: number) => (
-        <li class={`moon-item ${i === lastIndex ? 'is-latest' : ''}`}>
+        <li class={`moon-item ${i === 0 ? 'is-latest' : ''}`}>
           <figure>
             <div class="moon-disc" aria-hidden="true">
               {m.image ? (
