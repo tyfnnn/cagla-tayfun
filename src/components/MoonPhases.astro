@@ -1,0 +1,272 @@
+---
+import { moonPhases, type MoonPhase, type PhaseName } from '../data/moon-phases';
+
+const PHASE_TR: Record<PhaseName, string> = {
+  'New Moon': 'Yeni Ay',
+  'Waxing Crescent': 'Hilal',
+  'First Quarter': 'İlk Dördün',
+  'Waxing Gibbous': 'Şişkin Ay',
+  'Full Moon': 'Dolunay',
+  'Waning Gibbous': 'Sönen Şişkin Ay',
+  'Last Quarter': 'Son Dördün',
+  'Waning Crescent': 'Solan Hilal',
+};
+
+const items = moonPhases;
+const lastIndex = items.length - 1;
+
+function fmtDate(iso: string) {
+  return new Date(iso + 'T12:00:00Z').toLocaleDateString('tr-TR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function moonPathD(angleDeg: number, size: number): string {
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = size / 2;
+  const a = ((angleDeg % 360) + 360) % 360;
+
+  if (a < 0.5 || a >= 359.5) return '';
+  if (Math.abs(a - 180) < 0.5) {
+    return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`;
+  }
+
+  const rx = Math.abs(Math.cos((a * Math.PI) / 180)) * r;
+
+  if (a < 180) {
+    const sweep = a < 90 ? 0 : 1;
+    return (
+      `M ${cx} ${cy - r} ` +
+      `A ${r} ${r} 0 1 1 ${cx} ${cy + r} ` +
+      `A ${rx} ${r} 0 1 ${sweep} ${cx} ${cy - r} Z`
+    );
+  }
+
+  const sweep = a > 270 ? 1 : 0;
+  return (
+    `M ${cx} ${cy - r} ` +
+    `A ${r} ${r} 0 1 0 ${cx} ${cy + r} ` +
+    `A ${rx} ${r} 0 1 ${sweep} ${cx} ${cy - r} Z`
+  );
+}
+
+const SVG_SIZE = 110;
+---
+
+<section class="moon-section reveal" id="aylarimizin-ayi">
+  <h2 class="section-title">Aylarımızın Ayı</h2>
+  <p class="moon-lead">Birlikte geçirdiğimiz her ayın altıncı günü, gökyüzünde.</p>
+
+  {items.length === 0 ? (
+    <p class="moon-empty">İlk ayımız yakında burada parlayacak.</p>
+  ) : (
+    <ul class="moon-strip" role="list">
+      {items.map((m: MoonPhase, i: number) => (
+        <li class={`moon-item ${i === lastIndex ? 'is-latest' : ''}`}>
+          <figure>
+            <div class="moon-disc" aria-hidden="true">
+              {m.image ? (
+                <img
+                  src={m.image}
+                  alt=""
+                  width={SVG_SIZE}
+                  height={SVG_SIZE}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <svg
+                  viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`}
+                  width={SVG_SIZE}
+                  height={SVG_SIZE}
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <defs>
+                    <radialGradient id={`moon-shade-${m.date}`} cx="50%" cy="50%" r="50%">
+                      <stop offset="80%" stop-color="#1a1a2e" />
+                      <stop offset="100%" stop-color="#0a0a14" />
+                    </radialGradient>
+                    <radialGradient id={`moon-lit-${m.date}`} cx="50%" cy="40%" r="60%">
+                      <stop offset="0%" stop-color="#fff7e0" />
+                      <stop offset="60%" stop-color="#f5e9c4" />
+                      <stop offset="100%" stop-color="#d9c79a" />
+                    </radialGradient>
+                  </defs>
+                  <circle
+                    cx={SVG_SIZE / 2}
+                    cy={SVG_SIZE / 2}
+                    r={SVG_SIZE / 2}
+                    fill={`url(#moon-shade-${m.date})`}
+                  />
+                  {moonPathD(m.phaseAngle, SVG_SIZE) && (
+                    <path d={moonPathD(m.phaseAngle, SVG_SIZE)} fill={`url(#moon-lit-${m.date})`} />
+                  )}
+                </svg>
+              )}
+            </div>
+            <figcaption>
+              <span class="moon-date">{fmtDate(m.date)}</span>
+              <span class="moon-phase">{PHASE_TR[m.phase]}</span>
+              <span class="moon-illum">%{m.illumination.toFixed(1)} aydınlık</span>
+            </figcaption>
+          </figure>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <p class="moon-credit">Görseller: NASA / Goddard SVS</p>
+</section>
+
+<style>
+  .moon-section {
+    background: var(--color-bg);
+    padding: var(--space-xl) var(--space-md);
+  }
+
+  .moon-lead {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-family: var(--font-accent);
+    font-size: 1.15rem;
+    font-style: italic;
+    margin-top: calc(var(--space-md) * -0.5);
+    margin-bottom: var(--space-lg);
+  }
+
+  .moon-empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-family: var(--font-accent);
+    font-size: 1.05rem;
+    font-style: italic;
+  }
+
+  .moon-strip {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .moon-item {
+    position: relative;
+  }
+
+  .moon-item figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    background: var(--color-surface);
+    border: 1px solid var(--color-rose-pale);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm);
+    margin: 0;
+    box-shadow: 0 4px 24px rgba(212, 87, 123, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 150px;
+  }
+
+  .moon-item figure:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(212, 87, 123, 0.12);
+  }
+
+  .moon-item.is-latest figure {
+    box-shadow:
+      0 0 0 3px var(--color-rose-pale),
+      0 6px 28px rgba(212, 87, 123, 0.18);
+  }
+
+  .moon-disc {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #0a0a14;
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .moon-disc img,
+  .moon-disc svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .moon-disc img {
+    object-fit: cover;
+  }
+
+  figcaption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin-top: var(--space-xs);
+  }
+
+  .moon-date {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: var(--color-rose);
+    text-transform: lowercase;
+  }
+
+  .moon-phase {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    color: var(--color-text);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .moon-illum {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .moon-credit {
+    margin-top: var(--space-lg);
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    opacity: 0.7;
+  }
+
+  @media (max-width: 768px) {
+    .moon-strip {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: var(--space-sm);
+      justify-content: flex-start;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .moon-item {
+      scroll-snap-align: center;
+      flex: 0 0 auto;
+    }
+
+    .moon-item figure {
+      width: 124px;
+    }
+
+    .moon-disc {
+      width: 84px;
+      height: 84px;
+    }
+  }
+</style>
