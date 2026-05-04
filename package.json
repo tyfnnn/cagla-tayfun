@@ -9,7 +9,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "moon": "node --experimental-strip-types scripts/generate-moon-phases.ts",
+    "prebuild": "npm run moon"
   },
   "dependencies": {
     "@astrojs/vercel": "^10.0.4",
@@ -17,6 +19,7 @@
     "leaflet": "^1.9.4"
   },
   "devDependencies": {
-    "@types/leaflet": "^1.9.21"
+    "@types/leaflet": "^1.9.21",
+    "astronomy-engine": "^2.1.19"
   }
 }
